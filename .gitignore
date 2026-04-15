@@ -15,7 +15,10 @@ Module.symvers
 modules.order
 *.cmd
 .tmp_versions/
-
+*.o
+*.ko
+logs/
+*.log
 # Root filesystems
 rootfs-base/
 rootfs-*/

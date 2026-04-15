@@ -1,0 +1,2 @@
+Container alpha started
+Container beta started

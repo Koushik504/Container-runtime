@@ -19,13 +19,18 @@
 #include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
+#include <linux/timer.h>
 #include <linux/pid.h>
 #include <linux/sched/signal.h>
 #include <linux/slab.h>
 #include <linux/timer.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
-
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/timer.h>
+#include <linux/jiffies.h>
 #include "monitor_ioctl.h"
 
 #define DEVICE_NAME "container_monitor"
@@ -54,7 +59,7 @@
 
 
 /* --- Provided: internal device / timer state --- */
-static struct timer_list monitor_timer;
+
 static dev_t dev_num;
 static struct cdev c_dev;
 static struct class *cl;
@@ -131,8 +136,6 @@ static void kill_process(const char *container_id,
 /* ---------------------------------------------------------------
  * Timer Callback - fires every CHECK_INTERVAL_SEC seconds.
  * --------------------------------------------------------------- */
-static void timer_callback(struct timer_list *t)
-{
     /* ==============================================================
      * TODO 3: Implement periodic monitoring.
      *
@@ -143,10 +146,6 @@ static void timer_callback(struct timer_list *t)
      *   - enforce hard limit and then remove the entry
      *   - avoid use-after-free while deleting during iteration
      * ============================================================== */
-
-    mod_timer(&monitor_timer, jiffies + CHECK_INTERVAL_SEC * HZ);
-}
-
 /* ---------------------------------------------------------------
  * IOCTL Handler
  *
@@ -235,8 +234,6 @@ static int __init monitor_init(void)
         return -1;
     }
 
-    timer_setup(&monitor_timer, timer_callback, 0);
-    mod_timer(&monitor_timer, jiffies + CHECK_INTERVAL_SEC * HZ);
 
     printk(KERN_INFO "[container_monitor] Module loaded. Device: /dev/%s\n", DEVICE_NAME);
     return 0;
@@ -245,7 +242,7 @@ static int __init monitor_init(void)
 /* --- Provided: Module Exit --- */
 static void __exit monitor_exit(void)
 {
-    del_timer_sync(&monitor_timer);
+
 
     /* ==============================================================
      * TODO 6: Free all remaining monitored entries.
